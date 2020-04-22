@@ -27,71 +27,31 @@
     <div style="width: 100%; padding-left: 1.5em; padding-right: 1.5em;">
         <h1>Detail Kaos</h1>    
         <br />
-        <div class="columns is-mobile">
+        <div class="columns is-1 is-multiline is-mobile">
             <div 
-                v-on:click="pilihKaos('lenganPendek')" 
-                ref="lenganPendek" 
-                id="lenganPendek"
-                class="column kotak"
+                v-for="(item, index) in dataKaos" 
+                :key="index"
+                :ref="index"
+                :id="`kaos-${index}`"
+                @click="pilihKaos(index)"
+                class="column is-half kotak"                
             >
-                Lengan Pendek
+                {{ item.namaProduk }}
             </div>
-            <div 
-                v-on:click="pilihKaos('lenganPendekVNeck')" 
-                id="lenganPendekVNeck"
-                style="margin-left: 10px;" 
-                class="column kotak"
-            >
-                V Neck
-            </div>
-        </div>      
-        <div class="columns is-mobile">
-            <div
-                v-on:click="pilihKaos('lenganPanjang')" 
-                id="lenganPanjang"
-                class="column kotak"
-            >
-                Lengan Panjang
-            </div>
-            <div
-                style="margin-left: 10px;" 
-                v-on:click="pilihKaos('kaosAnak')" 
-                id="kaosAnak"
-                class="column kotak"
-            >
-                Kaos Anak
-            </div>
-        </div>      
-        <div class="columns is-mobile">
-            <div
-                v-on:click="pilihKaos('raglan34')" 
-                id="raglan34"
-                class="column kotak"
-            >
-                Kaos Raglan 3/4
-            </div>
-            <div
-                style="margin-left: 10px;" 
-                v-on:click="pilihKaos('raglan34Anak')" 
-                id="raglan34Anak"
-                class="column kotak"
-            >
-                Kaos Raglan 3/4 Anak
-            </div>
-        </div>      
+        </div>
     </div>
     <br clear="all" />
     
-    <div v-if="jenisKaos !== ''" style="width: 100%; padding-left: 0.7em; padding-right: 0.7em; clear: both;">
+    <div v-if="activeKaos !== ''" style="width: 100%; padding-left: 0.7em; padding-right: 0.7em; clear: both;">
         <b-message style="background-color: white;" title="Foto Kaos" :closable="false" type="is-info">
-            <b-button v-on:click="sisiKaos(jenisKaos)" outlined type="is-primary">
+            <b-button v-on:click="sisiKaos(activeKaos)" outlined type="is-primary">
                 <font-awesome-icon icon="sync-alt" />
                 Sisi Lain</b-button>
             <img style="background-color: black;" v-bind:src="this.$urlAsset + this.foto" /> 
         </b-message>        
     </div>
     <br clear="all" />
-    <div v-if="jenisKaos !== ''" style="width: 100%; padding-left: 0.7em; padding-right: 0.7em; clear: both;">
+    <div v-if="activeKaos !== ''" style="width: 100%; padding-left: 0.7em; padding-right: 0.7em; clear: both;">
         <b-button v-on:click="lanjut" style="height: 47px;" type="is-success" is-large rounded expanded>Mulai Custom <font-awesome-icon style="font-size: 20px;" icon="hand-point-right" /></b-button>
     </div>    
     <br clear="all" />
@@ -107,6 +67,7 @@
       margin-top: 5px;
   }
   .kotak {
+      margin-top: 10px;;
       padding-top: 1em;
       padding-bottom: 1em;
       text-align: center; 
@@ -130,6 +91,7 @@ export default {
     data: () => ({
         isShowModal: false,
         jenisKaos: "",
+        activeKaos: "",
         tampilanDepan: false,
         foto: "",
         dataKaos: []
@@ -138,25 +100,27 @@ export default {
 
         fetchData: async function() {
             const response = await requestServer(this.$urlAsset + '/json/product-kaos.js', 'get')
+            this.dataKaos = response.data.data;
+            console.log(response)
         },
 
-        pilihKaos: function(jenisKaos) {
-            if(this.jenisKaos !== '') {
-                document.getElementById(this.jenisKaos).classList.remove('blue');
+        pilihKaos: function(idKaos) {
+            if(this.activeKaos !== '') {
+                document.getElementById(`kaos-${this.activeKaos}`).classList.remove('blue');
             }
-            this.jenisKaos = jenisKaos;
-            document.getElementById(jenisKaos).classList.add('blue');
+            this.activeKaos = idKaos;
+            document.getElementById(`kaos-${idKaos}`).classList.add('blue');
 
             // set foto
-            this.foto = this[jenisKaos][0].front
+            this.foto = this.dataKaos[idKaos].front
             this.tampilanDepan = true;
         },
-        sisiKaos: function(jenisKaos) {
+        sisiKaos: function(activeKaos) {
             this.tampilanDepan = !this.tampilanDepan;
             if(this.tampilanDepan) {
-                this.foto = this[jenisKaos][0].front
+                this.foto = this.dataKaos[activeKaos].front
             } else {
-                this.foto = this[jenisKaos][0].back
+                this.foto = this.dataKaos[activeKaos].back
             }
             // this.foto = jenisKaos.front;
         },
